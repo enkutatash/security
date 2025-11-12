@@ -10,6 +10,9 @@ class User(AbstractUser):
     is_email_verified = models.BooleanField(default=False)
     is_phone_verified = models.BooleanField(default=False)
     mfa_enabled = models.BooleanField(default=False)
+    # temporary verification codes (6-digit). Persisted so verification endpoints can validate codes.
+    email_verification_code = models.CharField(max_length=6, null=True, blank=True)
+    phone_verification_code = models.CharField(max_length=6, null=True, blank=True)
 
 class MFADevice(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
