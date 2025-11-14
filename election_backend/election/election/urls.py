@@ -56,6 +56,7 @@ urlpatterns = [
     path('api/elections/', include('elections.urls')),
     path('api/logs/', include('audit_logs.urls')),
     path('api/backups/', include('backups.urls')),
+    path('api/dashboard/', include('dashboard.urls')),
 
     # JWT token endpoints
     path('api/token/', SwaggerTokenObtainPairView.as_view(), name='token_obtain_pair'),
