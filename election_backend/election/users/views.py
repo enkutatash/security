@@ -9,7 +9,10 @@ from .serializers import (
 	UserSerializer,
 	ChangePasswordSerializer,
 	MFAVerifySerializer,
+	VerifyEmailSerializer,
+	VerifyPhoneSerializer,
 )
+from drf_yasg.utils import swagger_auto_schema
 import random
 import pyotp
 
@@ -21,6 +24,7 @@ def _gen_code():
 class RegisterView(APIView):
 	permission_classes = (AllowAny,)
 
+	@swagger_auto_schema(request_body=RegistrationSerializer)
 	def post(self, request):
 		serializer = RegistrationSerializer(data=request.data)
 		if not serializer.is_valid():
@@ -47,11 +51,14 @@ class RegisterView(APIView):
 class VerifyEmailView(APIView):
 	permission_classes = (AllowAny,)
 
+	@swagger_auto_schema(request_body=VerifyEmailSerializer)
 	def post(self, request):
-		email = request.data.get('email')
-		code = request.data.get('code')
-		if not email or not code:
-			return Response({'detail': 'email and code required'}, status=status.HTTP_400_BAD_REQUEST)
+		serializer = VerifyEmailSerializer(data=request.data)
+		if not serializer.is_valid():
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+		email = serializer.validated_data['email']
+		code = serializer.validated_data['code']
 
 		user = get_object_or_404(User, email=email)
 		if user.email_verification_code == code:
@@ -65,11 +72,14 @@ class VerifyEmailView(APIView):
 class VerifyPhoneView(APIView):
 	permission_classes = (AllowAny,)
 
+	@swagger_auto_schema(request_body=VerifyPhoneSerializer)
 	def post(self, request):
-		phone = request.data.get('phone')
-		code = request.data.get('code')
-		if not phone or not code:
-			return Response({'detail': 'phone and code required'}, status=status.HTTP_400_BAD_REQUEST)
+		serializer = VerifyPhoneSerializer(data=request.data)
+		if not serializer.is_valid():
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+		phone = serializer.validated_data['phone']
+		code = serializer.validated_data['code']
 
 		user = get_object_or_404(User, phone=phone)
 		if user.phone_verification_code == code:
@@ -87,6 +97,7 @@ class ProfileView(APIView):
 		serializer = UserSerializer(request.user)
 		return Response(serializer.data)
 
+	@swagger_auto_schema(request_body=UserSerializer)
 	def put(self, request):
 		serializer = UserSerializer(request.user, data=request.data, partial=True)
 		if serializer.is_valid():
@@ -98,6 +109,7 @@ class ProfileView(APIView):
 class ChangePasswordView(APIView):
 	permission_classes = (IsAuthenticated,)
 
+	@swagger_auto_schema(request_body=ChangePasswordSerializer)
 	def put(self, request):
 		serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
 		if not serializer.is_valid():
@@ -111,6 +123,7 @@ class ChangePasswordView(APIView):
 class SetupMFAView(APIView):
 	permission_classes = (IsAuthenticated,)
 
+	@swagger_auto_schema(request_body=None)
 	def post(self, request):
 		# generate secret and create an MFADevice (unverified until user verifies)
 		secret = pyotp.random_base32()
@@ -123,6 +136,7 @@ class SetupMFAView(APIView):
 class VerifyMFAView(APIView):
 	permission_classes = (IsAuthenticated,)
 
+	@swagger_auto_schema(request_body=MFAVerifySerializer)
 	def post(self, request):
 		serializer = MFAVerifySerializer(data=request.data)
 		if not serializer.is_valid():

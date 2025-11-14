@@ -16,8 +16,49 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import permissions
+
+# swagger
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from drf_yasg.utils import swagger_auto_schema
+
+
+class SwaggerTokenObtainPairView(TokenObtainPairView):
+    """Small subclass that adds an explicit request body schema for drf-yasg.
+
+    drf-yasg sometimes doesn't infer the request body for class-based views
+    coming from third-party libs. Decorating post() with swagger_auto_schema
+    ensures the Swagger UI shows editable request JSON fields.
+    """
+
+    @swagger_auto_schema(request_body=TokenObtainPairSerializer)
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Election API",
+        default_version='v1',
+        description="API documentation for Election project",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
+
+    # JWT token endpoints
+    path('api/token/', SwaggerTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # Swagger / ReDoc
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger.yaml', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
 ]

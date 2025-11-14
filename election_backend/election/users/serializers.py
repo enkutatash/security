@@ -41,3 +41,13 @@ class MFASetupSerializer(serializers.Serializer):
 
 class MFAVerifySerializer(serializers.Serializer):
     token = serializers.CharField()
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField()
+
+
+class VerifyPhoneSerializer(serializers.Serializer):
+    phone = serializers.CharField()
+    code = serializers.CharField()

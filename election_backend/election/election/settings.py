@@ -52,6 +52,9 @@ INSTALLED_APPS = [
     'audit_logs',
     'backups',
     'dashboard',
+
+    #swagger
+    'drf_yasg',
     
 ]
 
@@ -162,4 +165,17 @@ SIMPLE_JWT = {
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+# drf-yasg / Swagger settings
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': "Enter: Bearer <access_token>",
+        }
+    },
 }
